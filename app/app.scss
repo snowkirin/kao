@@ -1,0 +1,10 @@
+// Import app variables
+@import "~nativescript-theme-core/scss/variables";
+
+// Import the theme’s main ruleset - both index and platform specific.
+@import '~nativescript-theme-core/core';
+@import '~nativescript-theme-core/blue';
+
+
+// Import common styles
+@import 'app-common';

@@ -24,10 +24,6 @@
           </StackLayout>
         </GridLayout>
         <StackLayout row="1">
-          <!--<SearchBar hint="Search hint"
-                     :text="searchPhrase"
-                     style="width: 100%"
-          />-->
         </StackLayout>
       </GridLayout>
     </ActionBar>
@@ -37,25 +33,67 @@
                    @drawerClosed="onDrawerClosed"
     >
       <StackLayout ~drawerContent
-                   backgroundColor="gray">
+                   backgroundColor="#222222"
+                   style="padding-left: 20; padding-right: 20;"
+      >
+        <ScrollView>
+          <StackLayout>
+            <StackLayout>
+              <StackLayout>
+                <Label text="카테고리"
+                       style="color: #ffffff;"/>
+              </StackLayout>
+              <FlexboxLayout flexWrap="wrap"
+                             style="margin-left: -12;">
+                <FlexboxLayout
+                  v-for="(item, idx) in filterList.category"
+                  class="filter-item"
+                  alignItems="center"
+                  :key="idx"
+                  style="margin-left: 12; margin-top: 16"
+                >
+                  <Label
+                    :text="item.abbrName"
+                    class="btn-name"
+                  />
+                  <Label :text="item.count"
+                         class="btn-count"
+                  />
+                </FlexboxLayout>
 
-        <Button text="Close!!!!"
-                @tap="onDrawerClosed"/>
+              </FlexboxLayout>
+            </StackLayout>
+            <StackLayout style="margin-top: 20">
+              <StackLayout>
+                <Label text="소재유형"
+                       style="color: #ffffff;"/>
+              </StackLayout>
+              <FlexboxLayout flexWrap="wrap"
+                             style="margin-left: -12;">
+                <FlexboxLayout
+                  v-for="(item, idx) in filterList.creativeType"
+                  class="filter-item"
+                  alignItems="center"
+                  :key="idx"
+                  style="margin-left: 12; margin-top: 16"
+                >
+                  <Label
+                    :text="item.abbrName"
+                    class="btn-name"
+                  />
+                </FlexboxLayout>
+              </FlexboxLayout>
+            </StackLayout>
+            <FlexboxLayout justifyContent="center">
+              <Button text="초기화"
+                      class="btn-init"/>
+              <Button text="검색"
+                      class="btn-submit"/>
+            </FlexboxLayout>
+          </StackLayout>
+        </ScrollView>
       </StackLayout>
       <StackLayout ~mainContent>
-        <RadListView for="item in library"
-                     pullToRefresh="true"
-                     @pullToRefreshInitiated="listRefresh"
-                     ref="list"
-        >
-          <v-template>
-          </v-template>
-          <v-template name="footer">
-            <StackLayout>
-              <Button text="Load More"/>
-            </StackLayout>
-          </v-template>
-        </RadListView>
       </StackLayout>
     </RadSideDrawer>
   </Page>
@@ -79,44 +117,14 @@
         currentWidth: screen.mainScreen.widthDIPs,
         currentHeight: screen.mainScreen.heightDIPs,
         drawerToggle: false,
-        listItem: [
-          {
-            name: '1',
-            desc: 'desc1'
-          },
-          {
-            name: '2',
-            desc: 'desc2'
-          },
-          {
-            name: '3',
-            desc: 'desc3'
-          },
-          {
-            name: '1',
-            desc: 'desc1'
-          },
-          {
-            name: '2',
-            desc: 'desc2'
-          },
-          {
-            name: '3',
-            desc: 'desc3'
-          },
-          {
-            name: '1',
-            desc: 'desc1'
-          },
-          {
-            name: '2',
-            desc: 'desc2'
-          },
-          {
-            name: '3',
-            desc: 'desc3'
-          }
-        ]
+        filterList: {
+          category: [],
+          creativeType: []
+        },
+        filterSelect: {
+          category: [],
+          creativeType: []
+        }
       }
     },
     watch: {},
@@ -128,7 +136,36 @@
           .then((res) => {
             this.library = res.data.content;
           })
+        this.fetchFilter('C').then((res) => {
+          this.filterList.category = res;
+        });
+        this.fetchFilter('T').then((res) => {
+          this.filterList.creativeType = res;
+        });
       },
+      fetchLibrary() {
+        return new Promise(resolve => {
+          http.get('https://clapi.wisebirds.co/board/user/list/?listSize=10&page=0&status=Y')
+            .then((res) => {
+              resolve(res.data);
+            })
+            .catch((error) => {
+              console.error(error);
+            })
+        })
+      },
+      fetchFilter(type) {
+        return new Promise(resolve => {
+          http.get(`https://clapi.wisebirds.co/code/count/${type}`)
+            .then(({data}) => {
+              resolve(data);
+            })
+            .catch((error) => {
+              console.log(error);
+            })
+        })
+      },
+
       // SideBar (여기서는 Filter)
       toggleDrawer() {
         this.drawerToggle = !this.drawerToggle;
@@ -188,5 +225,48 @@
   .txt-tags {
     font-size: 12;
     color: #666666;
+  }
+
+  .filter-item {
+    border-radius: 18;
+    background-color: #fff;
+    height: 36;
+    padding-left: 15;
+    padding-right: 15;
+
+    .btn-name {
+      font-size: 14;
+      color: rgba(51, 51, 51, 1.0);
+      font-weight: 700;
+    }
+
+    .btn-count {
+      color: rgba(51, 51, 51, 0.6);
+      font-size: 14;
+      margin-left: 5;
+    }
+  }
+
+  .btn-init {
+    width: 156;
+    height: 46;
+    border-radius: 28;
+    border-width: 1;
+    border-style: solid;
+    border-color: #fff;
+    background-color: #000;
+    color: #fff;
+    font-size: 15;
+
+  }
+
+  .btn-submit {
+    width: 156;
+    height: 46;
+    border-radius: 28;
+    background-color: #ff4a01;
+    color: #fff;
+    font-size: 15;
+
   }
 </style>
